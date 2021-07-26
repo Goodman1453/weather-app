@@ -24,5 +24,5 @@ interface AccuApiInterface {
      fun getLocationData(@Query("apikey") apiKey: String = API_KEY, @Query("q") location: String): Call<LocationInfoResponse>
 
     @GET("forecasts/v1/daily/5day/{key}")
-     fun getWeather5DaysForecast(@Path("key") key: String, @Query("apikey") apikey: String = "YhAESs3RWhRoAZQ7u89TiQZmLW7Q96sD", @Query("details") details: String = "true", @Query("metric") metric: String = "true"): Call<Weather5DayForecastResponse>
+     fun getWeather5DaysForecast(@Path("key") key: String, @Query("apikey") apikey: String = API_KEY, @Query("details") details: String = "true", @Query("metric") metric: String = "true"): Call<Weather5DayForecastResponse>
 }
