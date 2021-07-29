@@ -1,82 +1,71 @@
 package com.goodman.khumalo.weatherlens.model
 
-import android.content.Context
-import com.goodman.khumalo.weatherlens.network.AccuApiInterface
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.goodman.khumalo.weatherlens.network.RetrofitClient
-import com.goodman.khumalo.weatherlens.utils.NetworkResults
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class AccuWeatherModelImpl: AccuWeatherModel {
+class AccuWeatherModelImpl {
 
-    override fun getLocationKey(coordinates: String ,callback: NetworkResults<LocationInfoResponse>) {
-        val accuApiInterface: AccuApiInterface = RetrofitClient.client.create(AccuApiInterface::class.java)
-        val call: Call<LocationInfoResponse> = accuApiInterface.getLocationData(location = coordinates)
+    private val _locationInfoLiveData = MutableLiveData<LocationInfoResponse>()
+    val locationInfoLiveData: LiveData<LocationInfoResponse> = _locationInfoLiveData
+    private val _progressBarLiveData = MutableLiveData<Boolean>()
+    val progressBarLiveData: LiveData<Boolean> = _progressBarLiveData
+    private val _hourlyForecastLiveData =
+        MutableLiveData<MutableList<Weather12HourForecastResponse>>()
+    val hourlyForecastLiveData: LiveData<MutableList<Weather12HourForecastResponse>> =
+        _hourlyForecastLiveData
+    private val _fiveDayForecastLiveData = MutableLiveData<Weather5DayForecastResponse>()
+    val fiveDayForecastLiveData: LiveData<Weather5DayForecastResponse> = _fiveDayForecastLiveData
+    private val _error = MutableLiveData<String>()
+    val error: LiveData<String> = _error
 
-        call.enqueue(object : Callback<LocationInfoResponse>{
-            override fun onResponse(call: Call<LocationInfoResponse>, response: Response<LocationInfoResponse>) {
-                if (response.body() != null)
-                    callback.onSuccess(response.body()!!)
-                else
-                    callback.onFailure(response.message())
+
+    suspend fun getLocationKey(coordinates: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                _progressBarLiveData.postValue(true)
+                val response =
+                    RetrofitClient.accuWeatherApi.getLocationDataAsync(location = coordinates)
+                _locationInfoLiveData.postValue(response)
+                _progressBarLiveData.postValue(false)
+            } catch (e: Exception) {
+                _progressBarLiveData.postValue(false)
+                _error.postValue(e.message)
             }
-
-            override fun onFailure(call: Call<LocationInfoResponse>, t: Throwable) {
-                callback.onFailure(t.localizedMessage)
-            }
-        })
+        }
     }
 
 
-    override fun getWeatherHourlyForecast(
-        locationKey: String,
-        callback: NetworkResults<MutableList<Weather12HourForecastResponse>>
-    ) {
-        val accuApiInterface: AccuApiInterface = RetrofitClient.client.create(AccuApiInterface::class.java)
-        val call : Call<MutableList<Weather12HourForecastResponse>> = accuApiInterface.getWeatherHourlyForecast(locationKey)
-
-        call.enqueue(object : Callback<MutableList<Weather12HourForecastResponse>>{
-            override fun onResponse(
-                call: Call<MutableList<Weather12HourForecastResponse>>,
-                response: Response<MutableList<Weather12HourForecastResponse>>
-            ) {
-                if (response.body() != null)
-                    callback.onSuccess(response.body()!!)
-                else
-                    callback.onFailure(response.message())
+    suspend fun getWeatherHourlyForecast(locationKey: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                _progressBarLiveData.postValue(true)
+                val response =
+                    RetrofitClient.accuWeatherApi.getWeatherHourlyForecastAsync(locationKey)
+                _hourlyForecastLiveData.postValue(response)
+                _progressBarLiveData.postValue(false)
+            } catch (e: Exception) {
+                _progressBarLiveData.postValue(false)
+                _error.postValue(e.message)
             }
-
-            override fun onFailure(call: Call<MutableList<Weather12HourForecastResponse>>, t: Throwable) {
-                callback.onFailure(t.localizedMessage)
-            }
-
-        })
+        }
     }
 
-    override fun getWeather5dayForecast(
-        locationKey: String,
-        callback: NetworkResults<Weather5DayForecastResponse>
-    ) {
-        val accuApiInterface: AccuApiInterface = RetrofitClient.client.create(AccuApiInterface::class.java)
-        val call : Call<Weather5DayForecastResponse> = accuApiInterface.getWeather5DaysForecast(locationKey)
-
-        call.enqueue(object : Callback<Weather5DayForecastResponse>{
-            override fun onResponse(
-                call: Call<Weather5DayForecastResponse>,
-                response: Response<Weather5DayForecastResponse>
-            ) {
-                if (response.body() != null)
-                    callback.onSuccess(response.body()!!)
-                else
-                    callback.onFailure(response.message())
+    suspend fun getWeather5dayForecast(locationKey: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                _progressBarLiveData.postValue(true)
+                val response = RetrofitClient.accuWeatherApi.getWeather5DaysForecast(locationKey)
+                _fiveDayForecastLiveData.postValue(response)
+                _progressBarLiveData.postValue(false)
+            } catch (e: Exception) {
+                _progressBarLiveData.postValue(false)
+                _error.postValue(e.message)
             }
+        }
 
-            override fun onFailure(call: Call<Weather5DayForecastResponse>, t: Throwable) {
-                callback.onFailure(t.localizedMessage)
-            }
-
-        })
     }
 
 

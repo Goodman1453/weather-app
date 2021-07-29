@@ -1,6 +1,7 @@
 package com.goodman.khumalo.weatherlens.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -8,38 +9,35 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.goodman.khumalo.weatherlens.R
-import com.goodman.khumalo.weatherlens.model.*
 import com.goodman.khumalo.weatherlens.viewmodel.AccuWeatherViewModel
 import com.google.android.gms.location.*
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var  fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationStr: String
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
-    private lateinit var model: AccuWeatherModel
-    private lateinit var viewModel: AccuWeatherViewModel
     private lateinit var cityName: TextView
     private lateinit var phrase: TextView
     private lateinit var temperature: TextView
     private lateinit var adapter: AccuWeatherDailyForecastAdapter
     private lateinit var recyclerView: RecyclerView
+    private  lateinit var  viewModel: AccuWeatherViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        viewModel = ViewModelProvider(this).get(AccuWeatherViewModel::class.java)
         cityName = this.findViewById(R.id.city_name)
         phrase = this.findViewById(R.id.weather_phrase)
         temperature = this.findViewById(R.id.temperature)
-        model = AccuWeatherModelImpl()
-        viewModel = ViewModelProvider(this).get(AccuWeatherViewModel::class.java)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         getLocationUpdates()
         recyclerView = this.findViewById(R.id.WeatherInfoList)
@@ -50,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setAdapter(){
         recyclerView.addItemDecoration(DividerItemDecoration(applicationContext, RecyclerView.VERTICAL))
-        adapter = AccuWeatherDailyForecastAdapter()
+        adapter = AccuWeatherDailyForecastAdapter(applicationContext)
         recyclerView.adapter = adapter
 
     }
@@ -71,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                 for (location in locationResult.locations) {
                     if (location != null) {
                         locationStr = "${location.latitude},${location.longitude}"
-                        viewModel.getLocationKey(locationStr, model)
+                        viewModel.getLocationKey(locationStr)
                     }
                 }
             }
@@ -81,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
 
     //start location updates
+    @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
@@ -101,33 +100,28 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this,arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 100)
     }
     private fun setLiveDataListeners() {
-        viewModel.locationInfoLiveData.observe(this,
+        viewModel.locationKey.observe(this,
             { t ->
                 cityName.text = t!!.englishName
-                t.key?.let { viewModel.get5DailyForecast(it, model) }
+                t.key?.let { viewModel.get5DailyForecast(it) }
 
-                t.key?.let { viewModel.getHourlyForecast(it,model) }
+                t.key?.let { viewModel.getHourlyForecast(it) }
             })
 
-        viewModel.hourlyForecastLiveData.observe(this, object : Observer<MutableList<Weather12HourForecastResponse>>{
-            override fun onChanged(t: MutableList<Weather12HourForecastResponse>?) {
+        viewModel.hourlyForecast.observe(this,
+            { t ->
                 val get = t?.get(0)
                 phrase.text = get?.iconPhrase ?: ""
                 (get?.temperature?.value.toString()+ 0x00B0.toChar()).also { temperature.text = it }
+            })
 
-            }
-
-        })
-
-        viewModel.fiveDayForecastLiveData.observe(this, object : Observer<Weather5DayForecastResponse>{
-            override fun onChanged(t: Weather5DayForecastResponse?) {
+        viewModel.fiveDayForecast.observe(this,
+            { t ->
                 adapter.updateDailyForecast(t!!.dailyForeCasts)
                 adapter.onItemClick = {
                     startBrowserForDetails(it)
                 }
-            }
-
-        })
+            })
     }
 
 }

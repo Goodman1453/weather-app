@@ -1,6 +1,6 @@
 package com.goodman.khumalo.weatherlens.network
 
-import com.goodman.khumalo.weatherlens.network.AccuApiInterface.Companion.API_KEY
+import com.goodman.khumalo.weatherlens.network.AccuweatherService.Companion.API_KEY
 import okhttp3.Interceptor
 import okhttp3.Response
 
