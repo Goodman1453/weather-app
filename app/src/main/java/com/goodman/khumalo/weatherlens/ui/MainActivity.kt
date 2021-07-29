@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         phrase = this.findViewById(R.id.weather_phrase)
         temperature = this.findViewById(R.id.temperature)
         model = AccuWeatherModelImpl()
-        viewModel = ViewModelProviders.of(this).get(AccuWeatherViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(AccuWeatherViewModel::class.java)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         getLocationUpdates()
         recyclerView = this.findViewById(R.id.WeatherInfoList)
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
     private fun getLocationUpdates() {
-        locationRequest = LocationRequest()
+        locationRequest = LocationRequest.create()
         locationRequest.interval = 600000
         locationRequest.fastestInterval = 600000
         locationRequest.smallestDisplacement = 170f // 170 m = 0.1 mile
@@ -112,7 +113,7 @@ class MainActivity : AppCompatActivity() {
             override fun onChanged(t: MutableList<Weather12HourForecastResponse>?) {
                 val get = t?.get(0)
                 phrase.text = get?.iconPhrase ?: ""
-                temperature.text = get?.temperature?.value.toString()+ 0x00B0.toChar()
+                (get?.temperature?.value.toString()+ 0x00B0.toChar()).also { temperature.text = it }
 
             }
 
