@@ -1,6 +1,6 @@
 package com.goodman.khumalo.weatherlens.di
 
-import com.goodman.khumalo.weatherlens.model.AccuWeatherModelImpl
+import com.goodman.khumalo.weatherlens.model.AccuWeatherRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,10 +9,10 @@ import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
-class ImplementationModule {
+class AccuweatherRepositoryModule {
     @Singleton
     @Provides
-    fun provideAccuWeatherImpl(): AccuWeatherModelImpl {
-        return AccuWeatherModelImpl()
+    fun provideAccuWeatherRepository(): AccuWeatherRepository {
+        return AccuWeatherRepository()
     }
 }

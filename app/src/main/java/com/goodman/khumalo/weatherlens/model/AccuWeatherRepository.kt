@@ -6,7 +6,7 @@ import com.goodman.khumalo.weatherlens.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class AccuWeatherModelImpl {
+class AccuWeatherRepository {
 
     private val _locationInfoLiveData = MutableLiveData<LocationInfoResponse>()
     val locationInfoLiveData: LiveData<LocationInfoResponse> = _locationInfoLiveData
@@ -67,6 +67,4 @@ class AccuWeatherModelImpl {
         }
 
     }
-
-
 }
