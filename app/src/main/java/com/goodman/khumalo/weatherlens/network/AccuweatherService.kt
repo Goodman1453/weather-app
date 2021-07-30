@@ -1,20 +1,13 @@
 package com.goodman.khumalo.weatherlens.network
 
-import com.goodman.khumalo.weatherlens.BuildConfig
 import com.goodman.khumalo.weatherlens.model.LocationInfoResponse
 import com.goodman.khumalo.weatherlens.model.Weather12HourForecastResponse
 import com.goodman.khumalo.weatherlens.model.Weather5DayForecastResponse
-import kotlinx.coroutines.Deferred
-import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface
-
-
-
-AccuweatherService {
+interface AccuweatherService {
 
     companion object {
         const val API_KEY = "FOeNJW3N5l0PSlKAMmwhEFdufEWlGoSr"
